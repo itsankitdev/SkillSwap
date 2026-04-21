@@ -35,10 +35,19 @@ app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'SkillSwap API is running 🚀' });
 });
 
-// ── Routes (added in later steps) ───────────────────────
-// app.use('/api/auth', require('./routes/auth.routes'));
-// app.use('/api/users', require('./routes/user.routes'));
-// app.use('/api/skills', require('./routes/skill.routes'));
+
+// ── Routes ───────────────────────────────────────────────
+app.get('/', (req, res) => {
+  res.send('Server is running!');
+});
+
+app.use('/api/auth',     require('./routes/auth.routes'));
+app.use('/api/users',    require('./routes/user.routes'));
+app.use('/api/skills',   require('./routes/skill.routes'));
+app.use('/api/requests', require('./routes/request.routes'));
+app.use('/api/credits',  require('./routes/credit.routes'));
+app.use('/api/match', require('./routes/match.routes'));
+
 
 // ── 404 Handler ──────────────────────────────────────────
 app.use((req, res) => {
@@ -47,11 +56,35 @@ app.use((req, res) => {
 
 // ── Global Error Handler ─────────────────────────────────
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(err.statusCode || 500).json({
-    success: false,
-    message: err.message || 'Internal Server Error',
-  });
+  let statusCode = err.statusCode || 500;
+  let message = err.message || 'Internal Server Error';
+
+  // Mongoose duplicate key (e.g. email already exists)
+  if (err.code === 11000) {
+    const field = Object.keys(err.keyValue)[0];
+    message = `${field} is already taken`;
+    statusCode = 400;
+  }
+
+  // Mongoose validation error
+  if (err.name === 'ValidationError') {
+    message = Object.values(err.errors).map((e) => e.message).join(', ');
+    statusCode = 400;
+  }
+
+  // Mongoose bad ObjectId
+  if (err.name === 'CastError') {
+    message = `Invalid ${err.path}: ${err.value}`;
+    statusCode = 400;
+  }
+
+  // Don't leak stack traces in production
+  const response = { success: false, message };
+  if (process.env.NODE_ENV === 'development') {
+    response.stack = err.stack;
+  }
+
+  res.status(statusCode).json(response);
 });
 
 module.exports = app;
