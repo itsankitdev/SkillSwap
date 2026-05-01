@@ -117,7 +117,14 @@ const Matches = () => {
                   <div className="flex-1 min-w-0">
                     {/* Name + badges */}
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <h3 className="font-bold text-gray-800">{user.name}</h3>
+                      <h3 className="font-bold text-gray-800">
+                        <Link
+                          to={`/user/${user._id}`}
+                          className="hover:text-indigo-600 transition-colors"
+                        >
+                          {user.name}
+                        </Link>
+                      </h3>
                       {isMutual && (
                         <span className="text-xs bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full font-semibold border border-green-200">
                           🔄 Mutual Match

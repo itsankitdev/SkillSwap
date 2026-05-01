@@ -1,20 +1,36 @@
-const { User, Skill } = require('../models');
+const { User, Skill, Rating } = require('../models');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
 const sendResponse = require('../utils/sendResponse');
 
 // ── GET /api/users/:id ───────────────────────────────────
 exports.getUserById = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.params.id).select('-password');
+  const user = await User.findById(req.params.id)
+    .select('-password -passwordResetToken -passwordResetExpires');
 
   if (!user || !user.isActive) {
     return next(new AppError('User not found', 404));
   }
 
-  // Also fetch their public skills
-  const skills = await Skill.find({ user: user._id, isActive: true });
+  // Get their active skills
+  const skills = await Skill.find({
+    user: user._id,
+    isActive: true,
+    isLearned: false,
+  }).sort({ createdAt: -1 });
 
-  sendResponse(res, 200, 'User fetched successfully', { user, skills });
+  // Get their recent reviews
+  const ratings = await Rating.find({ reviewee: user._id, isPublic: true })
+    .populate('reviewer', 'name avatar')
+    .populate('session', 'title')
+    .sort({ createdAt: -1 })
+    .limit(5);
+
+  sendResponse(res, 200, 'User fetched successfully', {
+    user,
+    skills,
+    ratings,
+  });
 });
 
 // ── PUT /api/users/:id ───────────────────────────────────

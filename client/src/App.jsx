@@ -1,8 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
+import { SocketProvider } from './context/SocketContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import Navbar from './components/common/Navbar';
+
 
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -16,9 +18,17 @@ import Profile from './pages/Profile';
 import SkillDetail from './pages/SkillDetail';
 import NotFound from './pages/NotFound';
 import EditSkill from './pages/EditSkill';
+import Chat from './pages/Chat';
+import Sessions from './pages/Sessions';
+import Notifications from './pages/Notifications';
+import CreditHistory from './pages/CreditHistory';
+import PublicProfile from './pages/PublicProfile';
+
+
 
 const App = () => (
   <AuthProvider>
+    <SocketProvider>
     <BrowserRouter>
       <Navbar />
       <Routes>
@@ -36,6 +46,13 @@ const App = () => (
         <Route path="/requests"      element={<ProtectedRoute><Requests /></ProtectedRoute>} />
         <Route path="/profile"       element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/skills/edit/:id" element={<ProtectedRoute><EditSkill /></ProtectedRoute>} />
+        
+        <Route path="/chat"             element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+        <Route path="/chat/:conversationId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+        <Route path="/sessions" element={<ProtectedRoute><Sessions /></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+        <Route path="/credits"       element={<ProtectedRoute><CreditHistory /></ProtectedRoute>} />
+        <Route path="/user/:userId"  element={<ProtectedRoute><PublicProfile /></ProtectedRoute>} />
 
         {/* Fallback */}
         <Route path="*" element={<NotFound />} />
@@ -43,6 +60,7 @@ const App = () => (
 
       <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
     </BrowserRouter>
+    </SocketProvider>
   </AuthProvider>
 );
 

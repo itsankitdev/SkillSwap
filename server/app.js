@@ -47,6 +47,10 @@ app.use('/api/skills',   require('./routes/skill.routes'));
 app.use('/api/requests', require('./routes/request.routes'));
 app.use('/api/credits',  require('./routes/credit.routes'));
 app.use('/api/match', require('./routes/match.routes'));
+app.use('/api/chat', require('./routes/chat.routes'));
+app.use('/api/sessions', require('./routes/session.routes'));
+app.use('/api/ratings', require('./routes/rating.routes'));
+app.use('/api/notifications', require('./routes/notification.routes'));
 
 
 // ── 404 Handler ──────────────────────────────────────────

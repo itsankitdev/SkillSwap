@@ -1,52 +1,52 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, 'Name is required'],
+      required: [true, "Name is required"],
       trim: true,
-      minlength: [2, 'Name must be at least 2 characters'],
-      maxlength: [50, 'Name cannot exceed 50 characters'],
+      minlength: [2, "Name must be at least 2 characters"],
+      maxlength: [50, "Name cannot exceed 50 characters"],
     },
     email: {
       type: String,
-      required: [true, 'Email is required'],
+      required: [true, "Email is required"],
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email'],
+      match: [/^\S+@\S+\.\S+$/, "Please provide a valid email"],
     },
     password: {
       type: String,
-      required: [true, 'Password is required'],
-      minlength: [6, 'Password must be at least 6 characters'],
+      required: [true, "Password is required"],
+      minlength: [6, "Password must be at least 6 characters"],
       select: false, // Never returned in queries by default
     },
     avatar: {
       type: String,
-      default: '',
+      default: "",
     },
     bio: {
       type: String,
-      maxlength: [300, 'Bio cannot exceed 300 characters'],
-      default: '',
+      maxlength: [300, "Bio cannot exceed 300 characters"],
+      default: "",
     },
     location: {
-      city: { type: String, default: '' },
-      state: { type: String, default: '' },
-      country: { type: String, default: '' },
+      city: { type: String, default: "" },
+      state: { type: String, default: "" },
+      country: { type: String, default: "" },
     },
     credits: {
       type: Number,
       default: 10, // Every new user starts with 10 free credits
-      min: [0, 'Credits cannot go below 0'],
+      min: [0, "Credits cannot go below 0"],
     },
     role: {
       type: String,
-      enum: ['user', 'admin'],
-      default: 'user',
+      enum: ["user", "admin"],
+      default: "user",
     },
     isActive: {
       type: Boolean,
@@ -55,6 +55,11 @@ const userSchema = new mongoose.Schema(
     // Skill tags — quick reference without a full skills query
     teachTags: [{ type: String, trim: true, lowercase: true }],
     learnTags: [{ type: String, trim: true, lowercase: true }],
+    ratings: {
+      average: { type: Number, default: 0, min: 0, max: 5 },
+      count: { type: Number, default: 0 },
+      total: { type: Number, default: 0 },
+    },
 
     passwordChangedAt: Date,
     passwordResetToken: String,
@@ -64,33 +69,32 @@ const userSchema = new mongoose.Schema(
     timestamps: true, // Adds createdAt + updatedAt automatically
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  }
+  },
 );
 
 // ── Indexes ──────────────────────────────────────────────
 
-userSchema.index({ teachTags: 1 });       // Fast skill matching
+userSchema.index({ teachTags: 1 }); // Fast skill matching
 userSchema.index({ learnTags: 1 });
-userSchema.index({ 'location.city': 1 }); // Local matching
+userSchema.index({ "location.city": 1 }); // Local matching
 
 // ── Virtual: full location string ───────────────────────
-userSchema.virtual('locationString').get(function () {
+userSchema.virtual("locationString").get(function () {
   const { city, state, country } = this.location;
-  return [city, state, country].filter(Boolean).join(', ');
+  return [city, state, country].filter(Boolean).join(", ");
 });
 
 // ── Pre-save Hook: Hash password ─────────────────────────
 // Runs automatically before every .save() — never hash manually in controllers
-userSchema.pre('save', async function () {
+userSchema.pre("save", async function () {
   // 1. If password isn't modified, just stop (no next needed)
-  if (!this.isModified('password')) return; 
+  if (!this.isModified("password")) return;
 
   // 2. Hash the password
   this.password = await bcrypt.hash(this.password, 12);
-  
+
   // No next() call needed here!
 });
-
 
 // ── Instance Method: Compare passwords ──────────────────
 userSchema.methods.comparePassword = async function (candidatePassword) {
@@ -106,4 +110,4 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   return false;
 };
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model("User", userSchema);

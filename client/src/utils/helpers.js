@@ -30,3 +30,8 @@ export const getLevelColor = (level) => {
   };
   return map[level] || '';
 };
+
+export const formatRating = (rating) => {
+  if (!rating || rating.count === 0) return null;
+  return `${rating.average.toFixed(1)} ⭐ (${rating.count})`;
+};
